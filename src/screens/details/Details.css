@@ -1,0 +1,44 @@
+.backButton{
+    margin-left: 24px;
+    margin-top: 8px;
+    margin-bottom: 0px;
+    height: 24px;
+}
+
+.backButton:hover{
+    cursor: pointer;
+}
+
+.bodySection{
+    display: flex;
+}
+
+.first{
+    width: 20%;
+    margin-left: 24px;
+}
+
+.second{
+    width: 60%;
+    margin-right: 50px !important;
+}
+
+.third{
+    width: 20%;
+}
+/* for rating star when empty */
+.MuiRating-iconEmpty{
+    color: #000000 !important;
+}
+.actors{
+    cursor: auto !important;
+}
+.movieImage{
+    cursor: auto !important;
+}
+.listOfActors{
+    margin-right: 12px !important;
+}
+.movieTrailer{
+    width: 100% !important;
+}
