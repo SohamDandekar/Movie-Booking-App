@@ -25,3 +25,26 @@
     animation-iteration-count: infinite;
     animation-timing-function: linear;
 }
+.css-ahj2mt-MuiTypography-root {
+  text-align: center;
+}
+
+.modal_fields{
+  margin-bottom: 20px !important;
+}
+
+.modal_inputs{
+  width: 195px !important;
+}
+
+.css-1gm9ic5 {
+  padding-bottom: 0 !important;
+}
+
+.css-11yukd5-MuiTabs-indicator {
+  background-color: #FF0047 !important;
+}
+
+.css-1d1r5q-MuiFormHelperText-root{
+  color: red !important;
+}
