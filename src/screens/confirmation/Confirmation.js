@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Header from "../../common/header/Header";
+import {Header} from "../../common/header/Header";
 import "./Confirmation.css";
 import Typography from "@material-ui/core/Typography";
 import Input from "@material-ui/core/Input";
@@ -15,7 +15,7 @@ import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import green from "@material-ui/core/colors/green";
-import { Link } from "react-router-dom";
+import { Link, useParams} from "react-router-dom";
 
 const styles = (theme) => ({
   close: {
@@ -28,6 +28,7 @@ const styles = (theme) => ({
 });
 
 const Confirmation = (props) => {
+  let { movieId } = useParams();
   const [open, setOpen] = useState(false);
   const [bookingId, setBookingId] = useState("");
   const [couponCode, setCouponCode] = useState("");
@@ -75,7 +76,7 @@ const Confirmation = (props) => {
   };
 
   const couponApplyHandler = () => {
-    fetch(props.baseUrl + "movies/" + props.match.params.id, {
+    fetch(props.baseUrl + "movies/" + movieId, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -104,7 +105,7 @@ const Confirmation = (props) => {
 
       <div className="confirmation marginTop16">
         <div>
-          <Link to={"/bookshow/" + props.match.params.id}>
+          <Link to={"/bookshow/" + movieId}>
             <Typography className="back">&#60; Back to Book Show</Typography>
           </Link>
           <br />

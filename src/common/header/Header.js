@@ -10,7 +10,7 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
 import FormControl from "@mui/material/FormControl";
-import { TextField } from "@mui/material";
+import { Link, TextField } from "@mui/material";
 
 const style = {
   position: "absolute",
@@ -57,7 +57,6 @@ function a11yProps(index) {
   };
 }
 
-
 export const Header = (props) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [open, setOpen] = useState(false);
@@ -81,8 +80,8 @@ export const Header = (props) => {
     setValue(newValue);
   };
 
-// for clearing the local storage before closing the tab
-  window.onbeforeunload = function() {
+  // for clearing the local storage before closing the tab
+  window.onbeforeunload = function () {
     localStorage.clear();
   };
 
@@ -109,15 +108,14 @@ export const Header = (props) => {
           variant="contained"
           color="inherit"
           style={{ float: "right" }}
-          onClick={()=>
-            {
-              isLoggedIn ? setIsLoggedIn(false) : handleOpen();
-            }
-          }
+          onClick={() => {
+            isLoggedIn ? setIsLoggedIn(false) : handleOpen();
+          }}
         >
           {isLoggedIn ? "LOGOUT" : "LOGIN"}
         </Button>
         <Button
+          href={`/bookshow/${props.movieId}`}
           variant="contained"
           style={{
             backgroundColor: "#3452B4",
@@ -182,12 +180,11 @@ export const Header = (props) => {
               <p
                 style={{ margin: 0, padding: 0, display: "none" }}
                 id="error_msg"
-              >
-              </p>
+              ></p>
               <br />
               <FormControl>
                 <Button
-                id="login_button"
+                  id="login_button"
                   variant="contained"
                   style={{
                     backgroundColor: "#3452B4",
@@ -195,27 +192,41 @@ export const Header = (props) => {
                   }}
                   onClick={() => {
                     setLoginClicked(true);
-                    if(!username || !loginPassword)
-                      return;
-                    if(!localStorage.getItem(username)){
-                      document.getElementById('error_msg').innerText = "User doesn't exist. Please register";
-                      document.getElementById('error_msg').style.display = "block";
-                      document.getElementById(
-                        "login_button"
-                      ).style.marginTop = "2px";
-                      return;
-                    } 
-                    if(JSON.parse(localStorage.getItem(username)).password !== loginPassword){
-                      document.getElementById('error_msg').innerText = "Incorrect password";
-                      document.getElementById('error_msg').style.display = "block";
-                      document.getElementById(
-                        "login_button"
-                      ).style.marginTop = "2px";
-                      return;
-                    }
-                    setIsLoggedIn(true);
-                    document.getElementById('error_msg').style.display = "hidden";
-                    handleClose();
+                    if (!username || !loginPassword) return;
+                    fetch("http://localhost:8085/api/auth/login", {
+                      method: "POST",
+                      headers: {
+                        Authorization:
+                          "Basic " +
+                          window.btoa(username + ":" + loginPassword),
+                        "Content-Type": "application/json",
+                        "Cache-Control": "no-cache",
+                      },
+                      body: null,
+                    })
+                      .then((response) => response.json())
+                      .then((response) => {
+                        sessionStorage.setItem("uuid", response.id);
+
+                        if (response.headers.get("access-token") == null) {
+                          sessionStorage.setItem(
+                            "access-token",
+                            response["access-token"]
+                          );
+                        }
+                        setIsLoggedIn(true);
+                        document.getElementById("error_msg").style.display =
+                          "hidden";
+                        handleClose();
+                      })
+                      .catch((error) => {
+                        document.getElementById("error_msg").innerText = error;
+                        document.getElementById("error_msg").style.display =
+                          "block";
+                        document.getElementById(
+                          "login_button"
+                        ).style.marginTop = "2px";
+                      });
                   }}
                 >
                   LOGIN
@@ -341,19 +352,33 @@ export const Header = (props) => {
                         !isNaN(contact) &&
                         contact.length === 10
                       ) {
-                        let obj = {
-                          firstName: firstName,
-                          lastname: lastName,
-                          email: email,
+                        let obj = JSON.stringify({
+                          email_address: email,
+                          first_name: firstName,
+                          last_name: lastName,
+                          mobile_number: contact,
                           password: password,
-                          contact: contact,
-                        };
-                        localStorage.setItem(firstName + " " + lastName, JSON.stringify(obj));
-                        document.getElementById("success_msg").style.display =
-                          "block";
-                        document.getElementById(
-                          "register_button"
-                        ).style.marginTop = "2px";
+                        });
+                        fetch("http://localhost:8085/api/auth/signup", {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                            "Cache-Control": "no-cache",
+                          },
+                          body: obj,
+                        })
+                          .then((response) => response.json())
+                          .then((response) => {
+                            document.getElementById(
+                              "success_msg"
+                            ).style.display = "block";
+                            document.getElementById(
+                              "register_button"
+                            ).style.marginTop = "2px";
+                          })
+                          .catch((error) => {
+                            console.error("Error:", error);
+                          });
                       }
                     }
                   }}
@@ -389,11 +414,9 @@ export const Header = (props) => {
           variant="contained"
           color="inherit"
           style={{ float: "right" }}
-          onClick={()=>
-            {
-              isLoggedIn ? setIsLoggedIn(false) : handleOpen();
-            }
-          }
+          onClick={() => {
+            isLoggedIn ? setIsLoggedIn(false) : handleOpen();
+          }}
         >
           {isLoggedIn ? "LOGOUT" : "LOGIN"}
         </Button>
@@ -452,12 +475,11 @@ export const Header = (props) => {
               <p
                 style={{ margin: 0, padding: 0, display: "none" }}
                 id="error_msg"
-              >
-              </p>
+              ></p>
               <br />
               <FormControl>
                 <Button
-                id="login_button"
+                  id="login_button"
                   variant="contained"
                   style={{
                     backgroundColor: "#3452B4",
@@ -465,26 +487,31 @@ export const Header = (props) => {
                   }}
                   onClick={() => {
                     setLoginClicked(true);
-                    if(!username || !loginPassword)
+                    if (!username || !loginPassword) return;
+                    if (!localStorage.getItem(username)) {
+                      document.getElementById("error_msg").innerText =
+                        "User doesn't exist. Please register";
+                      document.getElementById("error_msg").style.display =
+                        "block";
+                      document.getElementById("login_button").style.marginTop =
+                        "2px";
                       return;
-                    if(!localStorage.getItem(username)){
-                      document.getElementById('error_msg').innerText = "User doesn't exist. Please register";
-                      document.getElementById('error_msg').style.display = "block";
-                      document.getElementById(
-                        "login_button"
-                      ).style.marginTop = "2px";
-                      return;
-                    } 
-                    if(JSON.parse(localStorage.getItem(username)).password !== loginPassword){
-                      document.getElementById('error_msg').innerText = "Incorrect password";
-                      document.getElementById('error_msg').style.display = "block";
-                      document.getElementById(
-                        "login_button"
-                      ).style.marginTop = "2px";
+                    }
+                    if (
+                      JSON.parse(localStorage.getItem(username)).password !==
+                      loginPassword
+                    ) {
+                      document.getElementById("error_msg").innerText =
+                        "Incorrect password";
+                      document.getElementById("error_msg").style.display =
+                        "block";
+                      document.getElementById("login_button").style.marginTop =
+                        "2px";
                       return;
                     }
                     setIsLoggedIn(true);
-                    document.getElementById('error_msg').style.display = "hidden";
+                    document.getElementById("error_msg").style.display =
+                      "hidden";
                     handleClose();
                   }}
                 >
@@ -618,7 +645,10 @@ export const Header = (props) => {
                           password: password,
                           contact: contact,
                         };
-                        localStorage.setItem(firstName + " " + lastName, JSON.stringify(obj));
+                        localStorage.setItem(
+                          firstName + " " + lastName,
+                          JSON.stringify(obj)
+                        );
                         document.getElementById("success_msg").style.display =
                           "block";
                         document.getElementById(
@@ -637,4 +667,3 @@ export const Header = (props) => {
       </div>
     );
 };
-

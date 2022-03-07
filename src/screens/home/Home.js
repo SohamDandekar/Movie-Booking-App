@@ -50,7 +50,8 @@ const MenuProps = {
 };
 
 const Home = (props) => {
-  const [moviesData, setMoviesData] = useState(moviesInfo);
+  const [releasedMovies, setReleasedMovies] = useState([]);
+  const [publishedMovies, setPublishedMovies] = useState([]);
   const [genres, setGenres] = useState([]);
   const [artists, setArtists] = useState([]);
   const [artistName, setArtistName] = useState([]);
@@ -60,9 +61,36 @@ const Home = (props) => {
   const [releaseStartDate, setReleaseStartDate] = useState("");
 
   useEffect(() => {
-    setGenres(genress);
-    setArtists(artistss);
-  },[]);
+    fetch("http://localhost:8085/artists", {
+      method: "GET",
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        setArtists(response.artists);
+      });
+
+    fetch("http://localhost:8085/genres", {
+      method: "GET",
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        setGenres(response.genres);
+      });
+    fetch("http://localhost:8085/api/movies?status=PUBLISHED", {
+      method: "GET",
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        setPublishedMovies(response.movies);
+      });
+    fetch("http://localhost:8085/api/movies?status=RELEASED", {
+      method: "GET",
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        setReleasedMovies(response.movies);
+      });
+  }, []);
 
   const genreHandleChange = (event) => {
     const {
@@ -84,51 +112,29 @@ const Home = (props) => {
   };
 
   const applyButtonHandler = () => {
-    let moviesCopy = moviesData;
-    let filteredMovies = moviesCopy.filter((movie) => {
-      let movieTitle = movieName;
-      let genresSelected = genreName;
-      let artistsSelected = artistName;
-      let selectedStartDate = releaseStartDate;
-      let selectedEndDate = releaseEndDate;
-
-      let condn1 =
-        movieTitle === "" ||
-        movieTitle.toLowerCase() === movie.title.toLowerCase();
-      let condn2 =
-        genresSelected.length === 0 ||
-        genresSelected.some((val) => movie.genres.includes(val));
-      let artistsNames = movie.artists.map((obj) => {
-        return obj.first_name + " " + obj.last_name;
+    let url = "http://localhost:8085/api/movies?status=RELEASED";
+    if (movieName !== "") {
+      url += "&title=" + movieName;
+    }
+    if (genreName.length > 0) {
+      url += "&genres=" + genreName.toString();
+    }
+    if (artistName.length > 0) {
+      url += "&artists=" + artistName.toString();
+    }
+    if (releaseStartDate !== "") {
+      url += "&start_date=" + releaseStartDate;
+    }
+    if (releaseEndDate !== "") {
+      url += "&end_date=" + releaseEndDate;
+    }
+    fetch(url, {
+      method: "GET",
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        setReleasedMovies(response.movies);
       });
-      let condn3 =
-        artistsSelected.length === 0 ||
-        artistsSelected.some((val) => artistsNames.includes(val));
-      let condnA = selectedStartDate === "";
-      let condnB = selectedEndDate === "";
-      let condn4 = true;
-
-      let movieReleaseDate;
-      movieReleaseDate = movie.release_date.split("T")[0];
-      if (condnA && condnB) {
-        condn4 = true;
-      } else if (
-        !condnA &&
-        !condnB &&
-        new Date(selectedStartDate) <= new Date(movieReleaseDate) &&
-        new Date(movieReleaseDate) <= new Date(selectedEndDate)
-      ) {
-        condn4 = true;
-      } else if (!condnA && selectedStartDate === movieReleaseDate) {
-        condn4 = true;
-      } else if (!condnB && selectedEndDate === movieReleaseDate) {
-        condn4 = true;
-      } else {
-        condn4 = false;
-      }
-      return condn1 && condn2 && condn3 && condn4;
-    });
-    setMoviesData(filteredMovies);
   };
 
   const { classes } = props;
@@ -137,10 +143,10 @@ const Home = (props) => {
       <Header pageName="Home" />
       <span className="heading">Upcoming Movies</span>
       <ImageList style={flexContainer} cols={6} rowHeight={250}>
-        {moviesData.map((item) => (
+        {publishedMovies.map((item) => (
           <ImageListItem className="imageListItem" key={item.id}>
             <Link to={{ pathname: `/details/${item.id}` }}>
-              <img src={item.poster_url} alt="movie image" />
+              <img src={item.poster_url} alt="movie" />
             </Link>
             <ImageListItemBar title={item.title} />
           </ImageListItem>
@@ -149,10 +155,10 @@ const Home = (props) => {
       <div className="flex-container">
         <div className="left">
           <ImageList cols={4} rowHeight={350} gap={20}>
-            {moviesData.map((item) => (
+            {releasedMovies.map((item) => (
               <ImageListItem key={item.id}>
                 <Link to={{ pathname: `/details/${item.id}` }}>
-                  <img src={item.poster_url} alt="movie image" />
+                  <img src={item.poster_url} alt="movie" />
                 </Link>
                 <ImageListItemBar
                   title={item.title}
@@ -212,9 +218,7 @@ const Home = (props) => {
                 >
                   {genres.map((item) => (
                     <MenuItem key={item.name} value={item.name}>
-                      <Checkbox
-                        checked={genreName.indexOf(item.name) > -1}
-                      />
+                      <Checkbox checked={genreName.indexOf(item.name) > -1} />
                       <ListItemText primary={item.name} />
                     </MenuItem>
                   ))}
@@ -238,9 +242,7 @@ const Home = (props) => {
                     return (
                       <MenuItem key={artistFullName} value={artistFullName}>
                         <Checkbox
-                          checked={
-                            artistName.indexOf(artistFullName) > -1
-                          }
+                          checked={artistName.indexOf(artistFullName) > -1}
                         />
                         <ListItemText primary={artistFullName} />
                       </MenuItem>
